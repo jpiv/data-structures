@@ -1,86 +1,55 @@
-_.findIndex = function(array, predicate) {
-  var position = -1;
-  _.each(array, function(item, index)
-  {
-    if(predicate(item))
-      position = index;
-  });
-  return position;
-};
-
 var GraphNode = function(value){
   this.value = value;
-  this.edges = [];
+  this.edges = {};
 };
 
 var Graph = function(){
-  this.nodes = [];
+  this.nodes = {};
 };
 
 Graph.prototype.addNode = function(node){
   var newNode = new GraphNode(node);
-  this.nodes.push(newNode);
+  this.nodes[node] = newNode;
 };
 
 Graph.prototype.contains = function(node){
-  for(var i = 0 ; i < this.nodes.length; i++)
-  {
-    if(this.nodes[i].value === node)
-      return true;
-  }
+  if(node in this.nodes)
+    return true;
+
   return false;
 };
 
 Graph.prototype.removeNode = function(node){
-  for(var i = 0; i < this.nodes.length; i++)
-  {
-    if(this.nodes[i].value === node)
-    {
-      this.nodes.splice(i,1);
-      return;
-    }
-  }
+  if(this.contains(node))
+    delete this.nodes[node];
+
 };
 
 Graph.prototype.hasEdge = function(fromNode, toNode){
-  var fromNodeIndex = _.findIndex(this.nodes, function(item)
+  if(this.contains(fromNode) && this.contains(toNode))
   {
-    return item.value === fromNode;
-  });
+    var fromNodeEdges = this.nodes[fromNode].edges;
+    if(fromNodeEdges[toNode])
+      return true;
+  }
 
-  if(fromNodeIndex === -1)
-    return false;
-
-  var toNodeIndex = _.findIndex(this.nodes[fromNodeIndex].edges, function(item)
-  {
-    return item.value === toNode;
-  });
-
-  if(toNodeIndex === -1)
-    return false;
-
-  return true;
+  return false;
 };
 
 Graph.prototype.addEdge = function(fromNode, toNode){
-  var fromNodeIndex = _.findIndex(this.nodes, function(item)
+  if(this.contains(fromNode) && this.contains(toNode))
   {
-    return item.value === fromNode;
-  });
-
-  var toNodeIndex = _.findIndex(this.nodes, function(item)
-  {
-    return item.value === toNode;
-  });
-
-  if(fromNodeIndex !== -1 && toNodeIndex !== -1)
-  {
-    this.nodes[fromNodeIndex].edges.push(this.nodes[toNodeIndex]);
-    this.nodes[toNodeIndex].edges.push(this.nodes[fromNodeIndex]);
+    this.nodes[fromNode].edges[this.nodes[toNode].value] = this.nodes[toNode];
+    this.nodes[toNode].edges[this.nodes[fromNode].value] = this.nodes[fromNode];
   }
 };
 
 Graph.prototype.removeEdge = function(fromNode, toNode){
+  if(this.contains(fromNode) && this.contains(toNode))
+  {
+    delete this.nodes[fromNode].edges[this.nodes[toNode].value];
+    delete this.nodes[toNode].edges[this.nodes[fromNode].value];
+  }
 };
 
 Graph.prototype.forEachNode = function(cb){
